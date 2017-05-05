@@ -1,0 +1,229 @@
+裸机
+最后我还是选择了裸机。这个方法有点土了，不过作为资深系统管理员，我觉得还是它最靠谱，毕竟一切都在掌控之中。
+开始之前，我先说几个关于深度学习软件的重点。
+其实绝大部分的AI研究都是用Python写的，因为它简单易学好操作。我不敢保证在AI正式进入人们的生产生活之后 Python会成为最主要的语言，但就目前来说Python是很有必要掌握的。有不少重要框架在它的基础上运行，而且Python有着非常强大而丰富的库，这是其他语言不能比的。
+此外，R语言和Scala也很受欢迎，对它们也要多多重视。
+下面这个清单列出了设置裸机时我们主要需要的东西。
+语言
+Anaconda(对应Python 3.6扩展版)－Anaconda是一个性能非常强大的Python发行版本，包含了100多个数据科学适用的Python,R语言和Scala的热门安装包。
+R－用于统计计算和统计绘图的语言和操作环境
+Scala －Scala全称为Scalable Language，是一门类似于JAVA而且性能极佳的的模块化语言。
+驱动和应用程序编程接口
+Nvidia驱动程序
+CUDA－一种由Nvidia推出的通用并行计算架构和应用程序编程接口模型。
+cuDNN－一套Nvidia专门为深度神经网络设计的GPU计算加速库。
+辅助应用程序
+Jupyter－一个超级赞的web应用程序，便于用户共享文档并且支持实时代码。
+框架／库
+TensorFlow－谷歌的开源DL框架，可以说支撑起了部分产品，比如谷歌翻译。
+Theano－一个靠谱而且受欢迎的机器学习框架。
+Caffe－来自伯克利的深度学习框架。
+Torch－一个GPU优先的科学计算框架，广泛支持机器学习算法。
+MXNET－可扩展性极强的DL系统，得到了亚马逊和一些大学的支持。
+优秀的抽象库
+Keras－一个很棒的用Python语言编写的神经网络库，基于TensorFlow或Theano开发
+Lasagne－用于构造和训练神经网络的轻量库。
+Python库
+基本上任何科学的计算系统都需要大量的库来保证运行效率，所以我们马上来装上一些最常用的库吧。
+Pip＝Python安装包管理工具
+Pandas＝高性能数据分析库
+Scikit-learn ＝强大机器学习库
+Numpy＝Python的一种开源的数字扩展
+Matplotlib＝可视化库（注：Python的2D绘图库）
+Scipy＝数值计算库
+IPython ＝交互式Python
+Scrappy＝网络数据爬取框架
+NLTK＝自然语言工具箱
+Pattern＝网络挖掘库
+Seaborn＝统计数据可视化
+OpenCV＝计算机视觉库
+Rpy2＝R语言接口
+Py-graphviz＝统计数据绘图
+OpenBLAS ＝线性代数库
+设置Linux工作站
+要解决科技前沿问题，最新版本的Ubuntu LTS是必要的选择。（在我写下这篇文章时的版本是16.04）我很期待在将来能够看到更多教程详细介绍Red Hat Enterprise Linux和它的重新编译产品，像是CentOS和Scientific Linux，不过就现在来说，我们还是用Ubuntu来研究深度学习吧。当然了，之后我可能会继续讨论以Red Hat Enterprise Linux为中心的构造。
+用Rufus把Ubuntu装进U盘里。
+在统一的可扩展固件接口（UEFI）模式下安装好Ubuntu。
+第一次boot
+第一次boot之后会黑屏，这是因为开源驱动跟不上最新、最好的芯片。按照以下步骤解决：
+电脑在boot的时候,打开TTY设备：
+Ctrl + Alt + F1
+打开最新的Nvidia驱动，然后reboot：
+登陆TTY中的root账号
+运行 sudo apt-get purge nvidia-*
+运行 sudo add-apt-repository ppa:graphics-drivers/ppa 之后是 sudo apt-get update
+运行sudo apt-get install nvidia-375
+Reboot，这时图像的问题应该就解决了。
+升级电脑
+打开计算机终端，输入下面的代码：
+sudo apt-get update -y
+sudo apt-get upgrade -y
+sudo apt-get install -y build-essential cmake g++ gfortran git pkg-config python-dev software-properties-common wget
+sudo apt-get autoremove
+sudo rm -rf /var/lib/apt/lists/*
+CUDA
+从英伟达官网上下载CUDA 8安装包，打开下载目录然后安装好CUDA。
+sudo dpkg -i cuda-repo-ubuntu1604-8-0-local.deb
+sudo apt-get update -y
+sudo apt-get install -y cuda
+加载CUDA为环境变量
+echo ‘export PATH=/usr/local/cuda/bin:$PATH’ >> ~/.bashrc
+echo ‘export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH’ >> ~/.bashrc
+source ~/.bashrc
+检查以确认安装的CUDA版本正确：
+nvcc –V
+重启电脑：
+sudo shutdown -r now
+检查CUDA安装情况
+首先，安装CUDA样本：/usr/local/cuda/bin/cuda-install-samples-*.sh ~/cuda-samples
+cd ~/cuda-samples/NVIDIA*Samples
+make -j $(($(nproc) + 1))
+然后在命令结果上做记录，用+1表示电脑所具有的GPU数量，如果出现多于一个的情况，只要把数字加上去就可以了，这样不论是安装还是编译，速度都会快上很多。
+接着运行deviceQuery并确保显卡的情况能够顺利被检测，还要保证测试被通过：
+bin/x86_64/linux/release/deviceQuery
+cuDNN
+cuDNN是DNN的GPU加速库，不幸的是，你没办法从repo里下一个，要在Nvidia上注册并申请获得许可，点击此链接前往申请。等待获批的时间少则几个小时，多则几天，拿到许可之后请下载版本4或5，在这个教程中我安装的是版本5。
+进行下一步之前，请耐心等待直到装好cuDNN为止，否则其他以cuDNN为基础的框架可能会安装失败。
+提取并复制文件：
+cd ~/Downloads/
+tar xvf cudnn*.tgz
+cd cuda
+sudo cp */*.h /usr/local/cuda/include/
+sudo cp */libcudnn* /usr/local/cuda/lib64/
+sudo chmod a+r /usr/local/cuda/lib64/libcudnn*
+输入以下代码以做检查：
+nvidia-smi
+顺利的话，计算机会输出一些GPU数据。
+Python
+sudo apt-get install -y python-pip python-dev
+sudo apt-get update && apt-get install -y python-numpy python-scipy python-nose python-h5py python-skimage python-matplotlib python-pandas python-sklearn python-sympy libfreetype6-dev libpng12-dev libopenjpeg5
+sudo apt-get clean && sudo apt-get autoremove
+rm -rf /var/lib/apt/lists/*
+现在通过Pip（安装包工具）将其余库安装完毕
+pip install seaborn rpy2 opencv-python pygraphviz pattern nltk scrappy
+Tensorflow
+一句话搞定，爽！
+测试Tensorflow
+$ python ... >>> import tensorflow as tf >>> hello = tf.constant('Hello, TensorFlow!') >>> sess = tf.Session() >>> print(sess.run(hello)) Hello, TensorFlow! >>> a = tf.constant(10) >>> b = tf.constant(32) >>> print(sess.run(a + b)) 42 >>>
+OpenBLAS
+sudo apt-get install -y libblas-test libopenblas-base libopenblas-dev
+Jupyter
+Juypter是一个超级棒的代码共享脚本，你可以轻松地用它分享含有代码和教程的“笔记”。在下一篇文章里我会详细介绍它的功能。
+pip install -U ipython[all] jupyter
+Theano
+准备好需要的配置之后就可以安装Theano了
+sudo apt-get install -y python-numpy python-scipy python-dev python-pip python-nose g++ python-pygments python-sphinx python-nose
+sudo pip install Theano
+是的没错，Theano首字母确实要大写。
+测试一下有没有装好Theano，要是安装成功的话在执行输入命令的时候不会有任何警告和错误：
+python >>> import theano >>> exit()
+nosetests theano
+Keras
+Keras是一款能够基于Theano 和 Tensorflow开发的抽象包装类，非常棒而且很受欢迎。它的安装过程和用法简单的不能再简单了，甚至有点无聊。
+sudo pip install keras
+Lasagne
+Lasagne是另一款被广泛使用的优秀包装器，它比起Keras还要更灵活一些，这样你就可以轻轻松松天马行空、脑洞大开。如果说Keras的受追捧表示对深度学习的研究开始步入正轨，那么Lasagne也许会引领下一个阶段。下面是它的安装指南：
+pip install -r https://raw.githubusercontent.com/Lasagne/Lasagne/v0.1/requirements.txt
+MXNET
+MXNET是一个由亚马逊支持，可扩展性极强的框架。点击链接跳转至安装教程。另外，Python 适用的MXNet安装脚本链接在这。
+在Ubuntu上安装MXNET
+来自网页：
+MXNet目前支持Python, R, Julia, 和 Scala语言。在Ubuntu操作系统上，MXNet提供一套可以安装所有需要的MXNet依赖项和库的Git Bash脚本给使用Python和R语言的用户。这一简易安装脚本可以在运行Ubuntu 12或更高版本的电脑上完成Python及 R语言适用的MXNet设置。该脚本将把MXNet安装在您的home文件夹~/mxnet中。
+给Python安装MXNet
+克隆MXNet的库，在终端运行以下命令(没有”sudo”)
+git clone https://github.com/dmlc/mxnet.git ~/mxnet --recursive
+我们在使用GPU，所以要加入一些配置到config.mk file中去。
+cd ~/mxnet
+cp make/config.mk .
+echo "USE_CUDA=1" >>config.mk
+echo "USE_CUDA_PATH=/usr/local/cuda" >>config.mk
+echo "USE_CUDNN=1" >>config.mk
+添加到路径：
+source ~/.bashrc
+安装R语言适用的MXNet
+我们之后会用到R语言的，所以现在就一起装了吧。点击链接跳转至R语言适用的MXNet的安装脚本。在设置好R语言之后下面的这些步骤可以调用脚本。
+首先添加R repo:
+sudo echo “deb http://cran.rstudio.com/bin/linux/ubuntu xenial/” | sudo tee -a /etc/apt/sources.list
+其次把R添加到Ubuntu Keyring:
+gpg — keyserver keyserver.ubuntu.com — recv-key E084DAB9
+gpg -a — export E084DAB9 | sudo apt-key add –
+然后安装R-Base：
+sudo apt-get install r-base r-base-dev
+再安装R-Studio(如果版本号不同要修改命令)
+sudo apt-get install -y gdebi-core
+wget https://download1.rstudio.org/rstudio-0.99.896-amd64.deb
+sudo gdebi -n rstudio-0.99.896-amd64.deb
+rm rstudio-0.99.896-amd64.deb
+最后安装R 适用的MXNet :
+cd ~/mxnet/setup-utils
+bash install-mxnet-ubuntu-r.sh
+Caffe
+安装指导来自the Caffe 网站，我发现他们有些迷之飘忽不定，不过每个人的受益可能不同。坦白说，我不怎么用Caffe，而且其他很多新手教程也不太讲它，所以如果你觉得这部分有些操蛋，那就直接跳过好了，哪天需要的时候再来看就好。
+安装前提：
+sudo apt-get install -y libprotobuf-dev libleveldb-dev libsnappy-dev libopencv-dev libhdf5-serial-dev protobuf-compiler
+sudo apt-get install -y --no-install-recommends libboost-all-dev
+sudo apt-get install -y libgflags-dev libgoogle-glog-dev liblmdb-dev
+克隆Caffe repo:
+cd ~/git
+git clone https://github.com/BVLC/caffe.git
+cd caffe
+cp Makefile.config.example Makefile.config
+在Makefile中用cuDNN 设置参数: USE_CUDNN := 1 :
+sed -i ‘s/# USE_CUDNN := 1/USE_CUDNN := 1/‘ Makefile.config
+修改BLAS的open参数值：
+sed -i 's/BLAS := atlas/BLAS := open/' Makefile.config
+安装好所需的东西，然后构建Caffe，构建测试并确保顺利通过所有测试。记住这些工作将花费一些时间。另外再次记住+1表示构造Caffe 所需GPU的数量，数量超过一个的时候要加上去。
+sudo pip install -r python/requirements.txt
+make all -j $(($(nproc) + 1))
+make test -j $(($(nproc) + 1))
+make runtest -j $(($(nproc) + 1))
+搭建PyCaffe，Python到Caffe的接口
+make pycaffe -j $(($(nproc) + 1))
+加载Caffe为环境变量
+echo ‘export CAFFE_ROOT=$(pwd)’ >> ~/.bashrc
+echo ‘export PYTHONPATH=$CAFFE_ROOT/python:$PYTHONPATH’ >> ~/.bashrc
+source ~/.bashrc
+测试以确认Caffe安装成功。要是成功的话在执行输入命令的时候不会有任何警告和错误：
+ipython >>> import caffe >>> exit()
+Torch
+下面是Torch安装指南，我个人在安装这个框架的时候遇到一些问题，不过基本上绝大部分人用它都没问题的。
+git clone https://github.com/torch/distro.git ~/git/torch — recursive
+cd torch; bash install-deps;
+./install.sh
+Scala
+sudo apt-get -y install scala
+Anaconda
+下载 Anaconda for Python 3.6 ，同时也提供2.7.x版本选择。
+安装：
+sudo bash Anaconda3–4.3.0-Linux-x86_64.sh
+千万不要把它添加到bashrc文件，否则当你reboot的时候，Python就会系统预置为Anaconda。这个操作在脚本中是被系统预设为“no”的，但你可能还是会像我最初那样被鬼迷了心窍。千万别，相信我，你会希望保持系统预置的，因为有一堆依赖项依赖于Ubuntu的Python。
+此外，Anaconda支持用户创造版本之间灵活切换的环境。
+让我们创建两个Anaconda环境:
+conda create -n py2 python=2.7
+conda create -n py3 python=3.6
+激活py3的环境：
+source activate py3
+source activate py3
+完成所有包的安装：
+conda install pip pandas scikit-learn scipy numpy matplotlib ipython-notebook seaborn opencv scrappy nltk pattern
+然后通过pip安装Conda（Anaconda的管理工具）内不提供的pygraphviz和R语言桥：
+pip install pygraphviz rpy2
+Reboot:
+sudo shutdown -r now
+给Anaconda安装Tensorflow, Theano, 和 Keras
+你要给Python 2和3两个版本的Anaconda安装这些库，他们自带性能最优化，所以用这些Anaconda支持的库能获得更好的效果。
+让我们从Python 3开始:
+source activate py3
+pip install tensorflow Theano keras
+接着休眠Python 3，激活py2环境。
+source deactivate
+激活py2环境：
+source activate py2
+给py2安装:
+pip install tensorflow Theano keras
+休眠环境：
+source deactivate
+凭借我们为与Ubuntu匹配的标准Python所安装的所有框架，最后你得到的就是内置Python 2.7.x的标准Ubuntu框架。
+结论
+终于搞定了。跟着这个教程一步步做下来，现在你应该已经有了一台顶级机器，或者是实惠一点的经济适用版。当然，最新、最好的适合深度学习的软件也已经装好了。
+那么，准备好打几场硬仗吧。仔细研究研究教程，就可以动手了！ 要密切留意这一系列我的下一篇文章哦，我将会深挖Kaggle数据科学界的超级碗 。2017年竞赛主题是寻找战胜肺癌的可能，奖金总计高达一百万美元！
